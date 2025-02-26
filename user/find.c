@@ -52,10 +52,6 @@ void find(char* path, char* file_name) {
                 if (strcmp(de.name, ".") == 0 || strcmp(de.name, "..") == 0) continue;
                 memmove(p, de.name, DIRSIZ);
                 p[DIRSIZ] = 0;
-                if(stat(buf, &st) < 0){
-                    printf("find: cannot stat %s\n", buf);
-                    continue;
-                }
                 find(buf, file_name);
             }
             break;
@@ -70,6 +66,9 @@ int main(int argc, char *argv[]) {
     printf("Missing arguments\n");
     exit(1);
   }
+
+  
+
   find(argv[1], argv[2]);
   exit(0);
 }
