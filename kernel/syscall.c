@@ -155,6 +155,32 @@ char *syscall_names[] = {
   [SYS_trace]   "trace",
 };
 
+//Num of args, check in sysproc.c and sysfile.c
+int syscall_nargs[] = {
+  [SYS_fork]    0,
+  [SYS_exit]    1,
+  [SYS_wait]    1,
+  [SYS_pipe]    1,
+  [SYS_read]    3,
+  [SYS_kill]    1,
+  [SYS_exec]    2,
+  [SYS_fstat]   2,
+  [SYS_chdir]   1,
+  [SYS_dup]     1,
+  [SYS_getpid]  0,
+  [SYS_sbrk]    1,
+  [SYS_sleep]   1,
+  [SYS_uptime]  0,
+  [SYS_open]    2,
+  [SYS_write]   3,
+  [SYS_mknod]   3,
+  [SYS_unlink]  1,
+  [SYS_link]    2,
+  [SYS_mkdir]   1,
+  [SYS_close]   1,
+  [SYS_trace]   1,
+};
+
 void
 syscall(void)
 {
@@ -163,17 +189,44 @@ syscall(void)
 
   num = p->trapframe->a7;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+
+    // Save arguments if this system call is being traced
+    uint64 args[6]; // Maximum 6 arguments for any system call
+    if (p->trace_mask & (1 << num)) {
+      args[0] = p->trapframe->a0;
+      args[1] = p->trapframe->a1;
+      args[2] = p->trapframe->a2;
+      args[3] = p->trapframe->a3;
+      args[4] = p->trapframe->a4;
+      args[5] = p->trapframe->a5;
+    }
+
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
     p->trapframe->a0 = syscalls[num]();
+
+    if (p->trace_mask & (1 << num)) {
+      //printf("%d: syscall %s -> %ld\n", p->pid, syscall_names[num], p->trapframe->a0);
+
+      printf("%d: syscall %s -> %ld", p->pid, syscall_names[num], p->trapframe->a0);
+
+      printf(" parameters: ");
+
+      if (num < sizeof(syscall_nargs) / sizeof(syscall_nargs[0])) {
+        for (int i = 0; i < syscall_nargs[num]; i++) {
+          if (i > 0) {
+            printf(", ");
+          }
+          printf("%ld", args[i]);
+        }
+      }
+
+      printf("\n");
+    }
   } else {
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);
     p->trapframe->a0 = -1;
-  }
-
-  if (p->trace_mask & (1 << num)) {
-    printf("%d: syscall %s -> %ld\n", p->pid, syscall_names[num], p->trapframe->a0);
   }
 }
 
