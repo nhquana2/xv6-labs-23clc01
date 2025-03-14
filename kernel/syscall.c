@@ -196,14 +196,12 @@ syscall(void)
 
     // Save arguments if this system call is being traced
     uint64 args[6]; // Maximum 6 arguments for any system call
-    if (p->trace_mask & (1 << num)) {
-      args[0] = p->trapframe->a0;
-      args[1] = p->trapframe->a1;
-      args[2] = p->trapframe->a2;
-      args[3] = p->trapframe->a3;
-      args[4] = p->trapframe->a4;
-      args[5] = p->trapframe->a5;
-    }
+    args[0] = p->trapframe->a0;
+    args[1] = p->trapframe->a1;
+    args[2] = p->trapframe->a2;
+    args[3] = p->trapframe->a3;
+    args[4] = p->trapframe->a4;
+    args[5] = p->trapframe->a5;
 
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
