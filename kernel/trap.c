@@ -166,7 +166,11 @@ clockintr()
   if(cpuid() == 0){
     acquire(&tickslock);
     ticks++;
+
+    if (ticks % 10 == 0) update_load_average();
+
     wakeup(&ticks);
+
     release(&tickslock);
   }
 

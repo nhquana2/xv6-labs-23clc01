@@ -118,6 +118,7 @@ void testproc() {
       printf("sysinfotest: FAIL nproc is %ld instead of %ld\n", info.nproc, nproc);
       exit(1);
   }
+  printf("freemem: %ld nproc: %ld loadavg: %ld\n", info.freemem, info.nproc, info.loadavg);
 }
 
 void testbad() {

@@ -108,6 +108,9 @@ int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);
 int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
 uint64          get_num_proc(void);
+uint64          get_load_average(void);
+void            update_load_average(void);
+extern uint64   load_average;
 
 // swtch.S
 void            swtch(struct context*, struct context*);

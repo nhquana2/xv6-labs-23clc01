@@ -6,6 +6,9 @@
 #include "proc.h"
 #include "defs.h"
 
+#define LOAD_DECAY_FACTOR 95     // 95% of old value, 5% of new (divided by 100)
+uint64 load_average = 0;         // Scaled by 100 for fixed-point calculation
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -708,4 +711,30 @@ get_num_proc(void)
   }
   
   return count;
+}
+
+void
+update_load_average(void)
+{
+  struct proc *p;
+  int runnable_count = 0;
+  
+  // Count processes that are RUNNABLE or RUNNING
+  for(p = proc; p < &proc[NPROC]; p++) {
+    if(p->state == RUNNABLE || p->state == RUNNING)
+      runnable_count++;
+  }
+  
+  // Update load average using exponential decay formula
+  // load_avg = load_avg * 0.95 + current_load * 0.05
+  // Using fixed-point arithmetic (scaled by 100)
+  load_average = (load_average * LOAD_DECAY_FACTOR + 
+                 runnable_count * 100 * (100 - LOAD_DECAY_FACTOR)) / 100;
+}
+
+// Function to get the current load average
+uint64
+get_load_average(void)
+{
+  return load_average;
 }
